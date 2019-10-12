@@ -1,0 +1,213 @@
+  <script>
+      window.onload = function(e) {
+        var url_string = window.location.href;
+        var url = new URL(url_string);
+        var c = url.searchParams.get("id");
+        if (c) {
+        document.getElementById("logo").href = "index.html?id=" + c;
+        } else {
+          alert("Missing ID need at end of url ?id=YOUR-userID-HERE");
+        }
+
+      };
+    </script>
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha256-YLGeXaapI0/5IgZopewRJcFXomhRMlYYjugPLSyNjTY=" crossorigin="anonymous" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"
+        integrity="sha256-xKeoJ50pzbUGkpQxDYHD7o7hxe0LaOGeguUidbq6vis=" crossorigin="anonymous"></script>
+</head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.css"
+    integrity="sha256-aa0xaJgmK/X74WM224KMQeNQC2xYKwlAt08oZqjeF0E=" crossorigin="anonymous" />
+
+<script src="https://unpkg.com/@ungap/url-search-params@0.1.2/min.js"></script>
+
+<body>
+		<nav id="navbar-mount"><nav class="navbar" role="navigation" aria-label="main navigation"><div class="navbar-brand columns is-vcentered"><div class="column navbar-burger-column"><a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span></a></div><div class="column navbar-logo-column"><a id="logo" class="navbar-item" href="index.html"><img class="navbar-logo" src="https://cdn.glitch.com/6e2243ee-1b2f-4667-beae-dd5acf133cb5%2F065a456aee15f669a505172edc830b79.png?v=1564793286311"></a></div><div class="column navbar-auth-column"><div class="is-hidden-desktop"><div class="navbar-item"><div class="buttons"></div></div></div></div></div><div class="navbar-menu"><div class="navbar-start"><div class="divider"></div><a class="navbar-item is-hidden-desktop" href="https://dyno.gg/account" title="Manage Server">Manage Server</a><a class="navbar-item" href="charts.html" title="Charts">Charts</a></div></div></div><div class="navbar-item"><div class="buttons"></div></div></div></nav></nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-6">
+                <canvas id="serversChart"></canvas>
+            </div>
+            <div class="col-6">
+                <canvas id="channelsChart"></canvas>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-6">
+                <canvas id="usersChart"></canvas>
+            </div>
+            <div class="col-6">
+                <canvas id="ramUsedChart"></canvas>
+            </div>
+        </div>
+        <div class="row">
+            <h3>Send/Receive</h3>
+            <!-- These aggregate via sum hence skew and need own box for each time period -->
+            <div class="col-12" id="sentRecvMessage"></div>
+        </div>
+    </div>
+    <script>
+        function loadChart(data, htmlTag, label, options = {}) {
+            if (!options.unit) {
+                options.unit = "day"
+            }
+            var ctx = document.getElementById(htmlTag).getContext('2d');
+            var chartOptions = {
+                // The type of chart we want to create
+                type: 'line',
+                // The data for our dataset
+                data: {
+                    datasets: [{
+                        label: label,
+                        backgroundColor: 'rgb(102, 101, 210)',
+                        borderColor: 'rgb(0, 0, 0)',
+                        data: data
+                    }]
+                },
+                // Configuration options go here
+                options: {
+                    scales: {
+                        xAxes: [{
+                            type: "time",
+                            time: {
+                                unit: options.unit
+                            }
+                        }],
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: false
+                            }
+                        }]
+                    }
+                }
+            }
+            if (options.isByte) {
+                chartOptions.options.scales.yAxes[0].ticks.callback =  function (value,index) {
+                    return bytesFormatter(value, true);
+                }
+            }
+            var chart = new Chart(ctx, chartOptions);
+        }
+        function loadAll(id) {
+            const timeBlocks = ["minute", "hour", "week"]
+            // getlatest as well
+            httpGetAsync("https://api.chewey-bot.ga/analytics/getall/" + id, function (raw) {
+                try {
+                    raw = JSON.parse(raw)
+                } catch (e) {
+                    return alert("Get all failed (You might be rate limited try again in 30 seconds)", e)
+                }
+                var serversData = []
+                var channelsData = []
+                var usersData = []
+                var ramUsedData = []
+                for (var x = 0; x < raw.length; x++) {
+                    var receivedData = []
+                    var sentData = []
+                    var element = raw[x];
+                    if (element.length) {
+                        document.getElementById("sentRecvMessage").innerHTML +=
+                            '<div class="row"><div class="col-6"><canvas id="sentMsgChart' + x +
+                            '"></canvas></div><div class="col-6"><canvas id="receivedMsgChart' + x +
+                            '"></canvas></div></div>'
+                        for (var z = 0; z < element.length; z++) {
+                            var subPeriod = element[z];
+                            serversData.push({
+                                x: subPeriod.created,
+                                y: subPeriod.servers
+                            })
+                            channelsData.push({
+                                x: subPeriod.created,
+                                y: subPeriod.channels
+                            })
+                            receivedData.push({
+                                x: subPeriod.created,
+                                y: subPeriod.received_messages
+                            })
+                            sentData.push({
+                                x: subPeriod.created,
+                                y: subPeriod.sent_messages
+                            })
+                            usersData.push({
+                                x: subPeriod.created,
+                                y: subPeriod.users
+                            })
+                            ramUsedData.push({
+                                x: subPeriod.created,
+                                y: subPeriod.ram_used
+                            })
+                        }
+                        // avoid showing empty/small slots
+                        if (receivedData.length > 3 || x == 0) { //x==0 is first 10minute period
+                            setTimeout(function (x, receivedData, sentData) {
+                                // DOM update cycle needed for the cavas elements to exist
+                                loadChart(receivedData, "receivedMsgChart" + x, "Received Messages",
+                                    timeBlocks[x])
+                                loadChart(sentData, "sentMsgChart" + x, "Sent Messages", timeBlocks[x])
+                            }, 10, x, receivedData, sentData);
+                        }
+                    }
+                }
+                dateArrSort(serversData)
+                dateArrSort(channelsData)
+                dateArrSort(usersData)
+                dateArrSort(ramUsedData)
+                loadChart(serversData, "serversChart", "Servers", )
+                loadChart(channelsData, "channelsChart", "Channels")
+                loadChart(usersData, "usersChart", "Users")
+                loadChart(ramUsedData, "ramUsedChart", "Ram used", {
+                    isByte: true
+                })
+            })
+        }
+        function dateArrSort(arr) {
+            // Old aggregation didnt compress in order (Only does somthing in older data)
+            arr.sort(function (a, b) {
+                // https://stackoverflow.com/a/10124053
+                // Turn your strings into dates, and then subtract them
+                // to get a value that is either negative, positive, or zero.
+                return new Date(b.x) - new Date(a.x);
+            });
+        }
+        function bytesFormatter(bytes, label) {
+            // Use future ram used formatter
+            // http://jsfiddle.net/XfwZJ/2/
+            if (bytes == 0) return '';
+            var s = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
+            var e = Math.floor(Math.log(bytes) / Math.log(1024));
+            var value = ((bytes / Math.pow(1024, Math.floor(e))).toFixed(2));
+            e = (e < 0) ? (-e) : e;
+            if (label) value += ' ' + s[e];
+            return value;
+        }
+        function httpGetAsync(theUrl, callback) {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = function () {
+                if (xmlHttp.readyState == 4) {
+                    if (xmlHttp.status == 200) {
+                        callback(xmlHttp.responseText);
+                    } else {
+                        alert("Error load stats (You might be rate limited try again in 30 seconds)", xmlHttp
+                            .responseText)
+                    }
+                }
+            }
+            xmlHttp.open("GET", theUrl, true); // true for asynchronous
+            xmlHttp.send(null);
+        }
+        // loadAll("220625669032247296")
+        var url_string = window.location.href
+        var url = new URL(url_string);
+        var c = url.searchParams.get("id");
+        if (c) {
+            loadAll(c)
+        } else {
+            alert("Missing ID need at end of url ?id=YOUR-userID-HERE")
+        }
+    </script>
+</body>
+			<link rel="stylesheet" app.css">
+</html>
