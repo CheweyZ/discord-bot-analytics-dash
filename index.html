@@ -19,41 +19,16 @@
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Lxibot is a feature-rich and modular discord bot for your Discord Server: moderation, music, fun and much more!"
-    />
-    <meta property="og:title" content="LxiBot: A multi purpose discord bot" />
-    <meta
-      name="og:description"
-      content="Lxibot is a feature-rich and modular discord bot for your Discord Server: moderation, music, fun and much more!"
-    />
-    <meta
-      property="og:image"
-      content="https://cdn.glitch.com/6e2243ee-1b2f-4667-beae-dd5acf133cb5%2Fbackground-bot%20(1).png?v=1544277526644"
-    />
-    <title>LxiBot</title>
-    <link
-      rel="shortcut icon"
-      type="image/png"
-      href="https://cdn.glitch.com/76096013-46b1-455d-a115-37283e822ba2%2Fbackground-bot%20(1).png?v=1564854172450"
-    />
-    <link
-      rel="stylesheet"
-      href="Dynobotinfo_files/all.html"
-      integrity="sha384-87DrmpqHRiY8hPLIr7ByqhPIywuSsjuQAfMXAE0sMUpY3BM7nXjf+mLIUSvhDArs"
-      crossorigin="anonymous"
-    />
-    <link rel="stylesheet" href="app.css" />
-    <script
-      type="text/javascript"
-      async=""
-      src="Dynobotinfo_files/css.js"
-    ></script>
   
-  
-   
     
+    <title>Bot Analytics</title>
+ 
+  
+    <link rel="stylesheet" href="Stats/app.css" />
+
+
+   
+  
     <script>
       (function(w, d, s, l, i) {
         w[l] = w[l] || [];
@@ -583,11 +558,111 @@
 	select
 		max-width: 200px; */
     </style>
-    <script
-      id="_carbonads_projs"
-      type="text/javascript"
-      src="Dynobotinfo_files/CKYIL23M.json"
-    ></script>
+
+  
+     <script>
+    
+        function loadAll(id) {
+            const timeBlocks = ["minute", "hour", "week"]
+            // getlatest as well
+            httpGetAsync("https://api.chewey-bot.ga/analytics/getall/" + id, function (raw) {
+                try {
+                    raw = JSON.parse(raw)
+                } catch (e) {
+                    return alert("Get all failed (You might be rate limited try again in 30 seconds)", e)
+                }
+                var serversData = []
+                var channelsData = []
+                var usersData = []
+                var ramUsedData = []
+                for (var x = 0; x < raw.length; x++) {
+                    var receivedData = []
+                    var sentData = []
+                    var element = raw[x];
+                    if (element.length) {
+                   
+                        for (var z = 0; z < element.length; z++) {
+                            var subPeriod = element[z];
+                            serversData.push({
+                                x: subPeriod.created,
+                                y: subPeriod.servers
+                            })
+                            channelsData.push({
+                                x: subPeriod.created,
+                                y: subPeriod.channels
+                            })
+                            receivedData.push({
+                                x: subPeriod.created,
+                                y: subPeriod.received_messages
+                            })
+                            sentData.push({
+                                x: subPeriod.created,
+                                y: subPeriod.sent_messages
+                            })
+                            usersData.push({
+                                x: subPeriod.created,
+                                y: subPeriod.users
+                            })
+                            ramUsedData.push({
+                                x: subPeriod.created,
+                                y: subPeriod.ram_used
+                            })
+                        }
+                        // avoid showing empty/small slots
+                     
+                }
+document.getElementById("sentmsg").innerHTML = subPeriod.sent_messages
+document.getElementById("recmsg").innerHTML= subPeriod.received_messages
+document.getElementById("users").innerHTML = subPeriod.users
+document.getElementById("guilds").innerHTML= subPeriod.guilds
+console.log("done")
+                dateArrSort(serversData)
+                dateArrSort(channelsData)
+                dateArrSort(usersData)
+                dateArrSort(ramUsedData)
+
+
+                
+
+            })
+        }
+        function dateArrSort(arr) {
+            // Old aggregation didnt compress in order (Only does somthing in older data)
+            arr.sort(function (a, b) {
+                // https://stackoverflow.com/a/10124053
+                // Turn your strings into dates, and then subtract them
+                // to get a value that is either negative, positive, or zero.
+                return new Date(b.x) - new Date(a.x);
+            });
+        }
+    
+        function httpGetAsync(theUrl, callback) {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = function () {
+                if (xmlHttp.readyState == 4) {
+                    if (xmlHttp.status == 200) {
+                        callback(xmlHttp.responseText);
+                    } else {
+                        alert("Error load stats (You might be rate limited try again in 30 seconds)", xmlHttp
+                            .responseText)
+                    }
+                }
+            }
+            xmlHttp.open("GET", theUrl, true); // true for asynchronous
+            xmlHttp.send(null);
+        }
+        // loadAll("220625669032247296")
+        var url_string = window.location.href
+        var url = new URL(url_string);
+        var c = url.searchParams.get("id");
+        if (c) {
+            loadAll(c)
+        } else {
+            alert("Missing ID need at end of url ?id=YOUR-userID-HERE")
+        }
+    </script>
+  
+    
   </head>
   <body>
     <nav id="navbar-mount">
@@ -607,7 +682,7 @@
             <a class="navbar-item" href="index.html"
               ><img
                 class="navbar-logo"
-                src="https://cdn.glitch.com/6e2243ee-1b2f-4667-beae-dd5acf133cb5%2F065a456aee15f669a505172edc830b79.png?v=1564793286311"
+                src="https://i.redd.it/yb8x941uhjsz.png"
             /></a>
           </div>
           <div class="column navbar-auth-column">
@@ -619,12 +694,8 @@
         <div class="navbar-menu">
           <div class="navbar-start">
             <div class="divider"></div>
-            <a
-              class="navbar-item is-hidden-desktop"
-              href="https://dyno.gg/account"
-              title="Manage Server"
-              >Manage Server</a
-            >
+          
+            
             <a id="chartz" class="navbar-item" href="charts.html" title="Charts"
               >Charts</a
             >
@@ -665,7 +736,7 @@
               />
               <h4 class="is-size-5">Guild Count</h4>
               <div class="feature-body">
-                <p class="is-size-7">GUILD COUNT HERE</p>
+                <p id="guilds" class="is-size-7">GUILD COUNT HERE</p>
               </div>
             </div>
             <div class="feature">
@@ -675,7 +746,7 @@
               />
               <h4 class="is-size-5">Current Users</h4>
               <div class="feature-body">
-                <p class="is-size-7">USER COUNT HERE</p>
+                <p id="users" class="is-size-7">USER COUNT HERE</p>
               </div>
             </div>
             <div class="feature">
@@ -699,75 +770,7 @@
               </div>
             </div>
           </div>
-          <script>
-            function loadAll(id) {
-              const timeBlocks = ["minute", "hour", "week"];
-              // getlatest as well
-              httpGetAsync(
-                "https://api.chewey-bot.ga/analytics/getall/" + id,
-                function(raw) {
-                  try {
-                    raw = JSON.parse(raw);
-                  } catch (e) {
-                    return alert(
-                      "Get all failed (You might be rate limited try again in 30 seconds)",
-                      e
-                    );
-                  }
-                  var serversData = [];
-                  var channelsData = [];
-                  var usersData = [];
-                  var ramUsedData = [];
-                  for (var x = 0; x < raw.length; x++) {
-                    var receivedData = [];
-                    var sentData = [];
-                    var element = raw[x];
-                    if (element.length) {
-                      document.getElementById("sentmsg").value = sentData;
-                      document.getElementById("recmsg").value = receivedData;
-
-                      // avoid showing empty/small slots
-                      if (receivedData.length > 3 || x == 0) {
-                        //x==0 is first 10minute period
-                        setTimeout(
-                          function(x, receivedData, sentData) {
-                            // DOM update cycle needed for the cavas elements to exist
-                            loadChart(
-                              receivedData,
-                              "receivedMsgChart" + x,
-                              "Received Messages",
-                              timeBlocks[x]
-                            );
-                            loadChart(
-                              sentData,
-                              "sentMsgChart" + x,
-                              "Sent Messages",
-                              timeBlocks[x]
-                            );
-                          },
-                          10,
-                          x,
-                          receivedData,
-                          sentData
-                        );
-                      }
-                    }
-                  }
-                  dateArrSort(serversData);
-                  dateArrSort(channelsData);
-                  dateArrSort(usersData);
-                  dateArrSort(ramUsedData);
-                  loadChart(serversData, "serversChart", "Servers");
-                  loadChart(channelsData, "channelsChart", "Channels");
-                  loadChart(usersData, "usersChart", "Users");
-                  loadChart(ramUsedData, "ramUsedChart", "Ram used", {
-                    isByte: true
-                  });
-                }
-              );
-            }
-          </script>
-
+       
         
         </div>
       </div>
