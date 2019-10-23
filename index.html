@@ -14,6 +14,34 @@
 
 <body>
     <div class="container-fluid bg-dark">
+        <h1 class="text-white">Latest Stats</h1>
+        <div class="row text-center text-white">
+            <div class="col-md-3">
+                <div class="col-12 bg-secondary">
+                    <h3>Servers</h3><hr>
+                    <p id="serverLatest"></p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="col-12 bg-secondary">
+                    <h3>Channels</h3><hr>
+                    <p id="channelLatest"></p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="col-12 bg-secondary">
+                    <h3>Users</h3><hr>
+                    <p id="userLatest"></p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="col-12 bg-secondary">
+                    <h3>Ram</h3><hr>
+                    <p id="ramLatest"></p>
+                </div>
+            </div>
+        </div>
+        <h1 class="text-white">Charts</h1>
         <div class="row">
             <div class="col-lg-6">
                 <canvas id="serversChart"></canvas>
@@ -31,7 +59,7 @@
             </div>
         </div>
         <div class="row">
-            <h3 class="text-info">Send/Receive</h3>
+            <h3 class="text-white">Send/Receive</h3>
             <p class="text-info">Graph per timeframe</p>
             <!-- These aggregate via sum hence skew and need own box for each time period -->
             <div class="col-12" id="sentRecvMessage"></div>
@@ -163,12 +191,17 @@
                 dateArrSort(usersData)
                 dateArrSort(ramUsedData)
 
+                //cant put document load latest directly due to sent/receive aggregate
                 loadChart(serversData, "serversChart", "Servers" )
+                document.getElementById("serverLatest").innerText=serversData[0].y
                 loadChart(channelsData, "channelsChart", "Channels")
+                document.getElementById("channelLatest").innerText=channelsData[0].y
                 loadChart(usersData, "usersChart", "Users")
+                document.getElementById("userLatest").innerText=usersData[0].y
                 loadChart(ramUsedData, "ramUsedChart", "Ram used", {
                     isByte: true
                 })
+                document.getElementById("ramLatest").innerText=bytesFormatter(ramUsedData[0].y,true)
             })
         }
 
