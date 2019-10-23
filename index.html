@@ -15,18 +15,18 @@
 <body>
     <div class="container-fluid bg-dark">
         <div class="row">
-            <div class="col-6">
+            <div class="col-lg-6">
                 <canvas id="serversChart"></canvas>
             </div>
-            <div class="col-6">
+            <div class="col-lg-6">
                 <canvas id="channelsChart"></canvas>
             </div>
         </div>
         <div class="row">
-            <div class="col-6">
+            <div class="col-lg-6">
                 <canvas id="usersChart"></canvas>
             </div>
-            <div class="col-6">
+            <div class="col-lg-6">
                 <canvas id="ramUsedChart"></canvas>
             </div>
         </div>
@@ -114,8 +114,8 @@
                     var element = raw[x];
                     if (element.length) {
                         document.getElementById("sentRecvMessage").innerHTML +=
-                            '<div class="row"><div class="col-6"><canvas id="sentMsgChart' + x +
-                            '"></canvas></div><div class="col-6"><canvas id="receivedMsgChart' + x +
+                            '<div class="row"><div class="col-lg-6"><canvas id="sentMsgChart' + x +
+                            '"></canvas></div><div class="col-lg-6"><canvas id="receivedMsgChart' + x +
                             '"></canvas></div></div>'
 
                         for (var z = 0; z < element.length; z++) {
