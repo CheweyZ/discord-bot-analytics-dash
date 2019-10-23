@@ -13,7 +13,7 @@
 <script src="https://unpkg.com/@ungap/url-search-params@0.1.2/min.js"></script>
 
 <body>
-    <div class="container-fluid">
+    <div class="container-fluid bg-dark">
         <div class="row">
             <div class="col-6">
                 <canvas id="serversChart"></canvas>
@@ -31,7 +31,8 @@
             </div>
         </div>
         <div class="row">
-            <h3>Send/Receive</h3>
+            <h3 class="text-info">Send/Receive</h3>
+            <p class="text-info">Graph per timeframe</p>
             <!-- These aggregate via sum hence skew and need own box for each time period -->
             <div class="col-12" id="sentRecvMessage"></div>
         </div>
@@ -64,13 +65,22 @@
                             type: "time",
                             time: {
                                 unit: options.unit
+                            },
+                            ticks:{
+                                fontColor: "white"
                             }
                         }],
                         yAxes: [{
                             ticks: {
+                                fontColor: "white",
                                 beginAtZero: false
                             }
                         }]
+                    },
+                    legend: {
+                        labels: {
+                            fontColor: "white"
+                        }
                     }
                 }
             }
@@ -153,7 +163,7 @@
                 dateArrSort(usersData)
                 dateArrSort(ramUsedData)
 
-                loadChart(serversData, "serversChart", "Servers", )
+                loadChart(serversData, "serversChart", "Servers" )
                 loadChart(channelsData, "channelsChart", "Channels")
                 loadChart(usersData, "usersChart", "Users")
                 loadChart(ramUsedData, "ramUsedChart", "Ram used", {
