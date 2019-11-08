@@ -123,85 +123,99 @@
         }
 
         function loadAll(id) {
+
             const timeBlocks = ["minute", "hour", "week"]
             // getlatest as well
-            httpGetAsync("https://api.chewey-bot.ga/analytics/getall/" + id, function (raw) {
+            httpGetAsync("https://api.chewey-bot.ga/analytics/getday/" + id, function (raw) {
                 try {
                     raw = JSON.parse(raw)
                 } catch (e) {
                     return alert("Get all failed (You might be rate limited try again in 30 seconds)", e)
                 }
+                httpGetAsync("https://api.chewey-bot.ga/analytics/gethistory/" + id, function (allHistory) {
+                     try {
+                        raw.push(JSON.parse(allHistory))
+                     } catch (e) {
+                        return alert("Get all failed (You might be rate limited try again in 30 seconds)", e)
+                     }
 
-                var serversData = []
-                var channelsData = []
-                var usersData = []
-                var ramUsedData = []
-                for (var x = 0; x < raw.length; x++) {
-                    var receivedData = []
-                    var sentData = []
-                    var element = raw[x];
-                    if (element.length) {
-                        document.getElementById("sentRecvMessage").innerHTML +=
-                            '<div class="row"><div class="col-lg-6"><canvas id="sentMsgChart' + x +
-                            '"></canvas></div><div class="col-lg-6"><canvas id="receivedMsgChart' + x +
-                            '"></canvas></div></div>'
+                    var serversData = []
+                    var channelsData = []
+                    var usersData = []
+                    var ramUsedData = []
+                    for (var x = 0; x < raw.length; x++) {
+                        var receivedData = []
+                        var sentData = []
+                        var element = raw[x];
+                        if (element.length) {
+                            document.getElementById("sentRecvMessage").innerHTML +=
+                                '<div class="row"><div class="col-lg-6"><canvas id="sentMsgChart' + x +
+                                '"></canvas></div><div class="col-lg-6"><canvas id="receivedMsgChart' + x +
+                                '"></canvas></div></div>'
 
-                        for (var z = 0; z < element.length; z++) {
-                            var subPeriod = element[z];
-                            serversData.push({
-                                x: subPeriod.created,
-                                y: subPeriod.servers
-                            })
-                            channelsData.push({
-                                x: subPeriod.created,
-                                y: subPeriod.channels
-                            })
-                            receivedData.push({
-                                x: subPeriod.created,
-                                y: subPeriod.received_messages
-                            })
-                            sentData.push({
-                                x: subPeriod.created,
-                                y: subPeriod.sent_messages
-                            })
-                            usersData.push({
-                                x: subPeriod.created,
-                                y: subPeriod.users
-                            })
-                            ramUsedData.push({
-                                x: subPeriod.created,
-                                y: subPeriod.ram_used
-                            })
-                        }
+                            for (var z = 0; z < element.length; z++) {
+                                var subPeriod = element[z];
+                                serversData.push({
+                                    x: subPeriod.created,
+                                    y: subPeriod.servers
+                                })
+                                channelsData.push({
+                                    x: subPeriod.created,
+                                    y: subPeriod.channels
+                                })
+                                receivedData.push({
+                                    x: subPeriod.created,
+                                    y: subPeriod.received_messages
+                                })
+                                sentData.push({
+                                    x: subPeriod.created,
+                                    y: subPeriod.sent_messages
+                                })
+                                usersData.push({
+                                    x: subPeriod.created,
+                                    y: subPeriod.users
+                                })
+                                ramUsedData.push({
+                                    x: subPeriod.created,
+                                    y: subPeriod.ram_used
+                                })
+                            }
 
-                        // avoid showing empty/small slots
-                        if (receivedData.length > 3 || x == 0) { //x==0 is first 10minute period
-                            setTimeout(function (x, receivedData, sentData) {
-                                // DOM update cycle needed for the cavas elements to exist
-                                loadChart(receivedData, "receivedMsgChart" + x, "Received Messages",
-                                    timeBlocks[x])
-                                loadChart(sentData, "sentMsgChart" + x, "Sent Messages", timeBlocks[x])
+                            // avoid showing empty/small slots
+                            if (receivedData.length > 3 || x == 0) { //x==0 is first 10minute period
+                                setTimeout(function (x, receivedData, sentData) {
+                                    // DOM update cycle needed for the cavas elements to exist
+                                    loadChart(receivedData, "receivedMsgChart" + x, "Received Messages",
+                                        timeBlocks[x])
+                                    loadChart(sentData, "sentMsgChart" + x, "Sent Messages", timeBlocks[x])
 
-                            }, 10, x, receivedData, sentData);
+                                }, 10, x, receivedData, sentData);
+                            }
                         }
                     }
-                }
-                dateArrSort(serversData)
-                dateArrSort(channelsData)
-                dateArrSort(usersData)
-                dateArrSort(ramUsedData)
+                    dateArrSort(serversData)
+                    dateArrSort(channelsData)
+                    dateArrSort(usersData)
+                    dateArrSort(ramUsedData)
 
-                //cant put document load latest directly due to sent/receive aggregate
-                loadChart(serversData, "serversChart", "Servers" )
-                document.getElementById("serverLatest").innerText=serversData[0].y
-                loadChart(channelsData, "channelsChart", "Channels")
-                document.getElementById("channelLatest").innerText=channelsData[0].y
-                loadChart(usersData, "usersChart", "Users")
-                document.getElementById("userLatest").innerText=usersData[0].y
-                loadChart(ramUsedData, "ramUsedChart", "Ram used", {
-                    isByte: true
+                    //cant put document load latest directly due to sent/receive aggregate
+                    loadChart(serversData, "serversChart", "Servers" )
+                    document.getElementById("serverLatest").innerText=serversData[0].y
+                     document.getElementById("serverLatest").innerHTML+='<br><img src="https://api.chewey-bot.ga/analytics/getshield/'+id+'/servers" alt="servers">'
+                    loadChart(channelsData, "channelsChart", "Channels")
+                    document.getElementById("channelLatest").innerText=channelsData[0].y
+                    document.getElementById("channelLatest").innerHTML+='<br><img src="https://api.chewey-bot.ga/analytics/getshield/'+id+'/channels" alt="channels">'
+                    loadChart(usersData, "usersChart", "Users")
+                    document.getElementById("userLatest").innerText=usersData[0].y
+                    document.getElementById("userLatest").innerHTML+='<br><img src="https://api.chewey-bot.ga/analytics/getshield/'+id+'/users" alt="users">'
+                    loadChart(ramUsedData, "ramUsedChart", "Ram used", {
+                        isByte: true
+                    })
+                    document.getElementById("ramLatest").innerText=bytesFormatter(ramUsedData[0].y,true)
+                    document.getElementById("ramLatest").innerHTML+='<br><img src="https://api.chewey-bot.ga/analytics/getshield/'+id+'/ram_used" alt="ram used">'
+
                 })
-                document.getElementById("ramLatest").innerText=bytesFormatter(ramUsedData[0].y,true)
+
             })
         }
 
