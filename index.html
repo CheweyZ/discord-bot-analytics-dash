@@ -4,13 +4,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css"
         integrity="sha256-YLGeXaapI0/5IgZopewRJcFXomhRMlYYjugPLSyNjTY=" crossorigin="anonymous" />
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"
-        integrity="sha256-xKeoJ50pzbUGkpQxDYHD7o7hxe0LaOGeguUidbq6vis=" crossorigin="anonymous"></script>
-</head>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.css"
-    integrity="sha256-aa0xaJgmK/X74WM224KMQeNQC2xYKwlAt08oZqjeF0E=" crossorigin="anonymous" />
-
 <script src="https://unpkg.com/@ungap/url-search-params@0.1.2/min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dygraph/2.1.0/dygraph.min.js" integrity="sha256-XT58qJPKCsRBRq+MIcNDQ7dVh0GAa1k2r24w62z0Olk=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dygraph/2.1.0/dygraph.min.css" integrity="sha256-NmfeKHX4FgSrBzL2BhPhzy41cHgzNYIEZyLyqf2/B30=" crossorigin="anonymous" />
+<style>
+.dygraph-axis-label { color: white; }
+.dygraph-title { color: white; }
+.dygraph-legend {opacity: 0.4;}
+</style>
 
 <body>
     <div class="container-fluid bg-dark">
@@ -44,18 +46,18 @@
         <h1 class="text-white">Charts</h1>
         <div class="row">
             <div class="col-lg-6">
-                <canvas id="serversChart"></canvas>
+                <div id="serversChart"></div>
             </div>
             <div class="col-lg-6">
-                <canvas id="channelsChart"></canvas>
+                <div id="channelsChart"></div>
             </div>
         </div>
         <div class="row">
             <div class="col-lg-6">
-                <canvas id="usersChart"></canvas>
+                <div id="usersChart"></div>
             </div>
             <div class="col-lg-6">
-                <canvas id="ramUsedChart"></canvas>
+                <div id="ramUsedChart"></div>
             </div>
         </div>
         <div class="row">
@@ -66,60 +68,25 @@
         </div>
     </div>
     <script>
-        function loadChart(data, htmlTag, label, options = {}) {
-            if (!options.unit) {
-                options.unit = "day"
+        function loadChart(data, htmlTag, label, options = {}) {           
+            let dyChartOptions={
+                legend: 'always',
+                title: label,
+                labels: [ "Date", "Value" ],
+                showRangeSelector: true,
+                colorValue: 0.9,
+                width:document.getElementById(htmlTag).clientWidth,
+                fillAlpha: 0.4,
+                axisLineColor:"rgb(255,255,255)",
             }
-            var ctx = document.getElementById(htmlTag).getContext('2d');
-            var chartOptions = {
-                // The type of chart we want to create
-                type: 'line',
 
-                // The data for our dataset
-                data: {
-                    datasets: [{
-                        label: label,
-                        backgroundColor: 'rgb(53, 126, 242)',
-                        borderColor: 'rgb(0, 0, 0)',
-                        data: data
-                    }]
-                },
-
-
-                // Configuration options go here
-                options: {
-                    scales: {
-                        xAxes: [{
-                            type: "time",
-                            time: {
-                                unit: options.unit
-                            },
-                            ticks:{
-                                fontColor: "white"
-                            }
-                        }],
-                        yAxes: [{
-                            ticks: {
-                                fontColor: "white",
-                                beginAtZero: false
-                            }
-                        }]
-                    },
-                    legend: {
-                        labels: {
-                            fontColor: "white"
-                        }
-                    }
-                }
-            }
             if (options.isByte) {
-                chartOptions.options.scales.yAxes[0].ticks.callback =  function (value,index) {
-                    return bytesFormatter(value, true);
-                }
+                dyChartOptions.labelsKMG2=true
+            }else{
+                dyChartOptions.maxNumberWidth=10
             }
-            var chart = new Chart(ctx, chartOptions);
-
-
+            new Dygraph(
+            document.getElementById(htmlTag),data,dyChartOptions);
         }
 
         function loadAll(id) {
@@ -149,36 +116,36 @@
                         var element = raw[x];
                         if (element.length) {
                             document.getElementById("sentRecvMessage").innerHTML +=
-                                '<div class="row"><div class="col-lg-6"><canvas id="sentMsgChart' + x +
-                                '"></canvas></div><div class="col-lg-6"><canvas id="receivedMsgChart' + x +
-                                '"></canvas></div></div>'
+                                '<div class="row"><div class="col-lg-6"><div id="sentMsgChart' + x +
+                                '"></div></div><div class="col-lg-6"><div id="receivedMsgChart' + x +
+                                '"></div></div></div>'
 
                             for (var z = 0; z < element.length; z++) {
                                 var subPeriod = element[z];
-                                serversData.push({
-                                    x: subPeriod.created,
-                                    y: subPeriod.servers
-                                })
-                                channelsData.push({
-                                    x: subPeriod.created,
-                                    y: subPeriod.channels
-                                })
-                                receivedData.push({
-                                    x: subPeriod.created,
-                                    y: subPeriod.received_messages
-                                })
-                                sentData.push({
-                                    x: subPeriod.created,
-                                    y: subPeriod.sent_messages
-                                })
-                                usersData.push({
-                                    x: subPeriod.created,
-                                    y: subPeriod.users
-                                })
-                                ramUsedData.push({
-                                    x: subPeriod.created,
-                                    y: subPeriod.ram_used
-                                })
+                                serversData.push([
+                                    new Date(subPeriod.created),
+                                    subPeriod.servers
+                                ])
+                                channelsData.push([
+                                    new Date(subPeriod.created),
+                                    subPeriod.channels
+                                ])
+                                receivedData.push([
+                                    new Date(subPeriod.created),
+                                    subPeriod.received_messages
+                                ])
+                                sentData.push([
+                                    new Date(subPeriod.created),
+                                    subPeriod.sent_messages
+                                ])
+                                usersData.push([
+                                    new Date(subPeriod.created),
+                                    subPeriod.users
+                                ])
+                                ramUsedData.push([
+                                    new Date(subPeriod.created),
+                                    subPeriod.ram_used
+                                ])
                             }
 
                             // avoid showing empty/small slots
@@ -200,22 +167,21 @@
 
                     //cant put document load latest directly due to sent/receive aggregate
                     loadChart(serversData, "serversChart", "Servers" )
-                    document.getElementById("serverLatest").innerText=serversData[0].y
+                    document.getElementById("serverLatest").innerText=serversData[serversData.length-1][1]
                      document.getElementById("serverLatest").innerHTML+='<br><img src="https://api.chewey-bot.ga/analytics/getshield/'+id+'/servers" alt="servers">'
                     loadChart(channelsData, "channelsChart", "Channels")
-                    document.getElementById("channelLatest").innerText=channelsData[0].y
+                    document.getElementById("channelLatest").innerText=channelsData[channelsData.length-1][1]
                     document.getElementById("channelLatest").innerHTML+='<br><img src="https://api.chewey-bot.ga/analytics/getshield/'+id+'/channels" alt="channels">'
                     loadChart(usersData, "usersChart", "Users")
-                    document.getElementById("userLatest").innerText=usersData[0].y
+                    document.getElementById("userLatest").innerText=usersData[usersData.length-1][1]
                     document.getElementById("userLatest").innerHTML+='<br><img src="https://api.chewey-bot.ga/analytics/getshield/'+id+'/users" alt="users">'
                     loadChart(ramUsedData, "ramUsedChart", "Ram used", {
                         isByte: true
                     })
-                    document.getElementById("ramLatest").innerText=bytesFormatter(ramUsedData[0].y,true)
+                    document.getElementById("ramLatest").innerText=bytesFormatter(ramUsedData[ramUsedData.length-1][1],true)
                     document.getElementById("ramLatest").innerHTML+='<br><img src="https://api.chewey-bot.ga/analytics/getshield/'+id+'/ram_used" alt="ram used">'
 
                 })
-
             })
         }
 
@@ -225,7 +191,8 @@
                 // https://stackoverflow.com/a/10124053
                 // Turn your strings into dates, and then subtract them
                 // to get a value that is either negative, positive, or zero.
-                return new Date(b.x) - new Date(a.x);
+                // return new Date(b.x) - new Date(a.x);
+                return a[0]-b[0]
             });
         }
 
@@ -240,6 +207,21 @@
             e = (e < 0) ? (-e) : e;
             if (label) value += ' ' + s[e];
             return value;
+        }
+
+// src: https://stackoverflow.com/a/1685917
+        function toFixed(x) {
+        if (Math.abs(x) < 1.0) { var e=parseInt(x.toString().split('e-')[1]); if (e) { x *=Math.pow(10,e-1); x='0.' +
+            (new Array(e)).join('0') + x.toString().substring(2); } 
+            } else { 
+                var e=parseInt(x.toString().split('+')[1]);
+                if (e> 20) {
+                    e -= 20;
+                    x /= Math.pow(10,e);
+                    x += (new Array(e+1)).join('0');
+                }
+            }
+            return x;
         }
 
         function httpGetAsync(theUrl, callback) {
