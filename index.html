@@ -134,7 +134,7 @@
                 }
                 httpGetAsync("https://api.chewey-bot.ga/analytics/gethistory/" + id, function (allHistory) {
                      try {
-                        raw.push(JSON.parse(allHistory))
+                        raw.push(JSON.parse(allHistory)[0])
                      } catch (e) {
                         return alert("Get all failed (You might be rate limited try again in 30 seconds)", e)
                      }
