@@ -168,18 +168,18 @@
                     //cant put document load latest directly due to sent/receive aggregate
                     loadChart(serversData, "serversChart", "Servers" )
                     document.getElementById("serverLatest").innerText=serversData[serversData.length-1][1]
-                     document.getElementById("serverLatest").innerHTML+='<br><img src="https://api.chewey-bot.ga/analytics/getshield/'+id+'/servers" alt="servers">'
+                     document.getElementById("serverLatest").innerHTML+='<br><img src="https://api.chewey-bot.top/analytics/getshield/'+id+'/servers" alt="servers">'
                     loadChart(channelsData, "channelsChart", "Channels")
                     document.getElementById("channelLatest").innerText=channelsData[channelsData.length-1][1]
-                    document.getElementById("channelLatest").innerHTML+='<br><img src="https://api.chewey-bot.ga/analytics/getshield/'+id+'/channels" alt="channels">'
+                    document.getElementById("channelLatest").innerHTML+='<br><img src="https://api.chewey-bot.top/analytics/getshield/'+id+'/channels" alt="channels">'
                     loadChart(usersData, "usersChart", "Users")
                     document.getElementById("userLatest").innerText=usersData[usersData.length-1][1]
-                    document.getElementById("userLatest").innerHTML+='<br><img src="https://api.chewey-bot.ga/analytics/getshield/'+id+'/users" alt="users">'
+                    document.getElementById("userLatest").innerHTML+='<br><img src="https://api.chewey-bot.top/analytics/getshield/'+id+'/users" alt="users">'
                     loadChart(ramUsedData, "ramUsedChart", "Ram used", {
                         isByte: true
                     })
                     document.getElementById("ramLatest").innerText=bytesFormatter(ramUsedData[ramUsedData.length-1][1],true)
-                    document.getElementById("ramLatest").innerHTML+='<br><img src="https://api.chewey-bot.ga/analytics/getshield/'+id+'/ram_used" alt="ram used">'
+                    document.getElementById("ramLatest").innerHTML+='<br><img src="https://api.chewey-bot.top/analytics/getshield/'+id+'/ram_used" alt="ram used">'
 
                 })
             })
